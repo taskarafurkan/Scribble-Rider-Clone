@@ -107,7 +107,7 @@ namespace SplineMechanic
                 else
                 {
                     // If distance between desired node and last node is less than given number don't add node
-                    if (Vector2.Distance(_newNodePos, _spline.nodes[_spline.nodes.Count - 1].Position) > 0f)
+                    if (Vector2.Distance(_newNodePos, _spline.nodes[_spline.nodes.Count - 1].Position) > 0.05f)
                     {
                         // Create node for given position and direction
                         _spline.AddNode(new SplineNode(_newNodePos, _newNodePos));

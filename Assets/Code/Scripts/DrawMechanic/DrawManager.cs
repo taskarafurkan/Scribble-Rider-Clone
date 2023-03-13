@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,9 +8,10 @@ namespace DrawMechanic
     {
         #region Fields
 
-        // Allowed distance between last location
+        // Allowed distance between last line location
         public const float UNIT_DISTANCE = 0.01f;
 
+        [SerializeField] private SplineCreator _splineCreator;
         [SerializeField] private Line _line;
         [SerializeField] private Camera _camera;
 
@@ -20,6 +22,10 @@ namespace DrawMechanic
 
         private bool _pointerDown = false;
         private Vector3 _mousePosition;
+
+        private Vector3[] _linePointsArray;
+
+        public event Action<Vector3[]> OnDrawFinish;
 
         #endregion
 
@@ -33,6 +39,13 @@ namespace DrawMechanic
         public void OnPointerUp(PointerEventData eventData)
         {
             _pointerDown = false;
+
+            _linePointsArray = new Vector3[_line.GetPointsCount()];
+            _line.GetPoints(_linePointsArray);
+
+            OnDrawFinish?.Invoke(_linePointsArray);
+
+            //_splineCreator.GetLinePoints(a);
         }
 
         private void Update()
@@ -68,6 +81,27 @@ namespace DrawMechanic
                     _line.SetPosition(_mousePosition);
                 }
             }
+
+
+            //if (Input.GetMouseButton(0))
+            //{
+            //    _mousePosition = _camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Input.mousePosition.z + 10));
+
+            //    _line.SetPosition(_mousePosition);
+
+            //}
+
+            //if (Input.GetMouseButtonUp(0))
+            //{
+            //    a = new Vector3[_line.GetPointsCount()];
+            //    _line.GetPoints(a);
+            //    _splineCreator.GetLinePoints(a);
+            //}
+
+            //if (Input.GetMouseButtonDown(0))
+            //{
+            //    _line.ResetLineRenderer();
+            //}
         }
         #endregion
     }

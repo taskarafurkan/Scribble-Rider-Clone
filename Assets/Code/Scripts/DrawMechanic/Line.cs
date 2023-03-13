@@ -22,6 +22,16 @@ namespace DrawMechanic
             _lineRenderer.positionCount = 0;
         }
 
+        public void GetPoints(Vector3[] lineRendererPositions)
+        {
+            _lineRenderer.GetPositions(lineRendererPositions);
+        }
+
+        public int GetPointsCount()
+        {
+            return _lineRenderer.positionCount;
+        }
+
         private bool CanAppend(Vector2 position)
         {
             if (_lineRenderer.positionCount == 0) return true;
