@@ -14,24 +14,19 @@ namespace SplineMechanic
         [Header("Spline Properties")]
         [SerializeField] private Mesh _splineMesh;
         [SerializeField] private Material _splineMaterial;
+        [SerializeField] private Vector3 _spiralScale;
         [SerializeField] private float _splineScaleMultiplier;
-
-        [Header("Wheels Transform")]
-        [SerializeField] private Transform _wheelFrontRight;
-        [SerializeField] private Transform _wheelFrontLeft;
-        [SerializeField] private Transform _wheelBackRight;
-        [SerializeField] private Transform _wheelBackLeft;
-
+        [SerializeField] private PhysicMaterial _physicsMaterial;
 
         private Spline _spline;
         private SplineSmoother _splineSmoother;
         private SplineMeshTiling _splineMeshTiling;
 
         private Vector3 _newNodePos;
-        private GameObject _splineGO;
+        protected GameObject _splineGO;
         private Vector3 _centerPoint;
 
-        private List<Spline> _createdSplineList = new List<Spline>();
+        protected List<Spline> _createdSplineList = new List<Spline>();
 
         #endregion
 
@@ -42,21 +37,21 @@ namespace SplineMechanic
             _drawManager.OnDrawFinish += OnDrawFinish;
         }
 
-        private void OnDrawFinish(Vector3[] linePointsArray)
+        protected virtual void OnDrawFinish(Vector3[] linePointsArray)
         {
             if (_splineGO == null)
-                CreateSplines();
+                CreateSpline(null);
 
             CalculateCenterPoint(linePointsArray);
             CreateSplineNodes(linePointsArray);
         }
 
-        private void CreateSplines()
+        protected virtual void CreateSpline(Transform parent)
         {
             // Setting up spline
             _splineGO = new GameObject("Spline");
             _splineGO.transform.Rotate(180, 90, 0, Space.Self);
-            _splineGO.transform.parent = _wheelFrontRight.transform;
+            _splineGO.transform.parent = parent.transform;
             _splineGO.transform.localPosition = new Vector3(0, 0, 0);
             _splineGO.transform.localScale *= _splineScaleMultiplier;
 
@@ -68,25 +63,18 @@ namespace SplineMechanic
             _splineMeshTiling = _splineGO.AddComponent<SplineMeshTiling>();
             _splineMeshTiling.mesh = _splineMesh;
             _splineMeshTiling.material = _splineMaterial;
+            _splineMeshTiling.physicMaterial = _physicsMaterial;
             _splineMeshTiling.rotation = new Vector3(0, 90, 0);
-            _splineMeshTiling.scale = new Vector3(0.3f, 0.3f, 0.3f);
+            _splineMeshTiling.scale = _spiralScale;
             _splineMeshTiling.generateCollider = true;
             _splineMeshTiling.updateInPlayMode = true;
             _splineMeshTiling.curveSpace = true;
             _splineMeshTiling.mode = MeshBender.FillingMode.StretchToInterval;
-
-            // Duplicate main spline for other wheels
-            GameObject wheelFrontLeft = Instantiate(_splineGO, _wheelFrontLeft);
-            GameObject wheelBackRight = Instantiate(_splineGO, _wheelBackRight);
-            GameObject wheelBackLeft = Instantiate(_splineGO, _wheelBackLeft);
-
-            _createdSplineList.Add(wheelFrontLeft.GetComponent<Spline>());
-            _createdSplineList.Add(wheelBackRight.GetComponent<Spline>());
-            _createdSplineList.Add(wheelBackLeft.GetComponent<Spline>());
-
+            //_splineMeshTiling.curveSpace = false;
+            //_splineMeshTiling.mode = MeshBender.FillingMode.Repeat;
         }
 
-        private void CreateSplineNodes(Vector3[] linePointsArray)
+        protected virtual void CreateSplineNodes(Vector3[] linePointsArray)
         {
             if (linePointsArray.Length < 2)
                 return;
@@ -107,7 +95,7 @@ namespace SplineMechanic
                 else
                 {
                     // If distance between desired node and last node is less than given number don't add node
-                    if (Vector2.Distance(_newNodePos, _spline.nodes[_spline.nodes.Count - 1].Position) > 0.05f)
+                    if (Vector2.Distance(_newNodePos, _spline.nodes[_spline.nodes.Count - 1].Position) > 0/*0.2f*/)
                     {
                         // Create node for given position and direction
                         _spline.AddNode(new SplineNode(_newNodePos, _newNodePos));
@@ -148,7 +136,7 @@ namespace SplineMechanic
             }
         }
 
-        private void CalculateCenterPoint(Vector3[] linePointsArray)
+        protected virtual void CalculateCenterPoint(Vector3[] linePointsArray)
         {
             _centerPoint = Vector3.zero;
 
